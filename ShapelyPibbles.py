@@ -7,11 +7,12 @@ Created on Wed Oct 12 20:05:49 2022
 """
 
 
-from shapely.geometry import box, LineString, Point, Polygon
+#  from shapely.geometry import box, LineString, Point, Polygon
+from shapely.geometry import LineString
 from scipy.signal import find_peaks
 import matplotlib.pyplot as plt
 import numpy as np
-import math
+#  import math
 
 
 def seg_intersect(ar):
@@ -72,9 +73,6 @@ points.append(result)
 lines.append(((p2[0], result[0]), (p2[1], result[1])))
 lines.append(((p1[0], result[0]), (p1[1], result[1])))
 
-#  new point
-#  result = [195.35714285714286, 0.0]
-#  projected up onto 'north' through p1 & p2
 mult = dim_y / p1[1]
 run = (p1[0] - result[0]) * mult
 rise = (p1[1] - result[1]) * mult
@@ -95,92 +93,50 @@ intersect2 = list(seg_intersect(arr2)[0][:])
 points.append(intersect2)
 
 #  TEST sine wave to get bounce co-ords
+high, low = max(intersect1[0], intersect2[0]), min(intersect1[0], intersect2[0])
 Fs = 300
 f = (np.arange(10) / 2)[1:]
-sample = 300
-t = x = np.arange(sample)
-i = 4.5
-y = np.sin(2 * np.pi * i * x / Fs) * 150
-series = np.sin(2 * np.pi * i * x / Fs) * 150
-thresh = 0.95
-peak_idx, _ = find_peaks(series, height=thresh)
-valley_idx, _ = find_peaks(-series, height=thresh)
+sample = high + low
+t = x = np.arange(low, high)
+for ii in range(1, 10):
+    i = ii / 2
+    y = np.sin(2 * np.pi * i * x / Fs) * 150
+    series = np.sin(2 * np.pi * i * x / Fs) * 150
+    thresh = 0.95
+    peak_idx, _ = find_peaks(series, height=thresh)
+    valley_idx, _ = find_peaks(-series, height=thresh)
 
+    roomy, roomx = zip(*room)
+    if len(points):
+        pointsy, pointsx = zip(*points)
 
-#  zip all co-ordinates
-"""
+    # just plt below here
+    plt.figure()
+    plt.style.use('seaborn-dark')
+    plt.plot(p1[0], p1[1], 'go')
+    plt.plot(p2[0], p2[1], 'bo')
 
-"""
-roomy, roomx = zip(*room)
-if len(points):
-    pointsy, pointsx = zip(*points)
+    plt.plot(roomy, roomx)
+    if len(points):
+        plt.plot(pointsy, pointsx, 'co')
 
-# just plt below here
-plt.figure()
-plt.style.use('seaborn-dark')
-plt.plot(p1[0], p1[1], 'go')
-plt.plot(p2[0], p2[1], 'bo')
+    for i in lines:
+        plt.plot(i[0], i[1], 'r')
 
-plt.plot(roomy, roomx)
-if len(points):
-    plt.plot(pointsy, pointsx, 'co')
+    plt.plot(t, series + 150)
 
-for i in lines:
-    plt.plot(i[0], i[1], 'r')
+    plt.plot(t[peak_idx], [300]*len(peak_idx), 'r.')
+    plt.plot(t[valley_idx], [0]*valley_idx, 'b.')
 
-plt.plot(t, series)
+    plt.show()
 
-# Plot threshold
-plt.plot([min(t), max(t)], [thresh, thresh], '--')
-plt.plot([min(t), max(t)], [-thresh, -thresh], '--')
-
-# Plot peaks (red) and valleys (blue)
-plt.plot(t[peak_idx], series[peak_idx], 'r.')
-plt.plot(t[valley_idx], series[valley_idx], 'b.')
-
-plt.show()
+    print(f"Low: {low}  High: {high}")
+    print(f"Bounce: {result[0]}   Crest: {peak_idx[0]}")
+    print(peak_idx, valley_idx)
 
 """
-from scipy.signal import find_peaks
-import numpy as np
-import matplotlib.pyplot as plt
 
-
-Fs = 300
-f = (np.arange(10) / 2)[1:]
-color = list('bgrcmyk')
-
-sample = 300
-t = x = np.arange(sample)
-i = 4.5
-y = np.sin(2 * np.pi * i * x / Fs) * 150
-# Input signal
-
-series = np.sin(2 * np.pi * i * x / Fs) * 150 
-
-# Threshold value (for height of peaks and valleys)
-thresh = 0.95
-
-# Find indices of peaks
-peak_idx, _ = find_peaks(series, height=thresh)
-
-# Find indices of valleys (from inverting the signal)
-valley_idx, _ = find_peaks(-series, height=thresh)
-
-# Plot signal
-plt.plot(t, series)
-
-# Plot threshold
-plt.plot([min(t), max(t)], [thresh, thresh], '--')
-plt.plot([min(t), max(t)], [-thresh, -thresh], '--')
-
-# Plot peaks (red) and valleys (blue)
-plt.plot(t[peak_idx], series[peak_idx], 'r.')
-plt.plot(t[valley_idx], series[valley_idx], 'b.')
-
-plt.show()
-
-
+find resul[0] that is closest to a peak or valley 
 
 
 
